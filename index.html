@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='footer.css') }}">
+    <style>
+        body {
+            background-image: url('{{ backdrop_url }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background for readability */
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            flex: 1;
+            animation: pageFadeIn 1s ease-out; /* Fade-in animation for the entire page */
+        }
+        .nav-tabs .nav-link {
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: none;
+            border-radius: 10px 10px 0 0;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #28a745;
+            color: #fff;
+            transform: scale(1.05); /* Slight scale-up for active tab */
+        }
+        .nav-tabs .nav-link:hover {
+            background-color: #218838;
+            color: #fff;
+            transform: scale(1.05); /* Slight scale-up on hover */
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        .card-img-top {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .card:hover .card-img-top {
+            transform: scale(1.1); /* Zoom effect on hover */
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+            transition: color 0.3s ease;
+        }
+        .card:hover .card-title {
+            color: #28a745; /* Change title color on hover */
+        }
+        .btn-outline-primary {
+            border: 1px solid #007bff;
+            color: #007bff;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background-color: #007bff;
+            color: #fff;
+            transform: scale(1.05); /* Slight scale-up on hover */
+        }
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #28a745;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Fade-in Animation for Page Content */
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        /* About Section Styles */
+        .feature-card {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        .feature-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feature-card:hover {
+            transform: scale(1.03) !important;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #28a745;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover .feature-icon {
+            transform: scale(1.2);
+            color: #fff;
+        }
+        .feature-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #28a745;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        .feature-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: #28a745;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover .feature-title:after {
+            width: 100%;
+            background: #fff;
+        }
+        .feature-text {
+            color: #ddd;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        .about-hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png');
+            background-size: cover;
+            background-position: center;
+            padding: 100px 0;
+            border-radius: 15px;
+            margin-bottom: 50px;
+            text-align: center;
+            color: white;
+        }
+        .about-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease;
+        }
+        .about-hero p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease;
+        }
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Footer Styles */
+        .footer {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            color: white;
+            padding: 50px 0 20px;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+        }
+        .footer.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #28a745 0%, #218838 100%);
+        }
+        .footer h5 {
+            color: #28a745;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        .footer h5::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: #28a745;
+        }
+        .footer .text-muted {
+            color: #aaa !important;
+        }
+        .footer a {
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .footer a:hover {
+            color: #28a745;
+            text-decoration: underline;
+        }
+        .social-links a {
+            display: inline-block;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+        }
+        .social-links a:hover {
+            transform: translateY(-5px);
+            color: #28a745 !important;
+        }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-img-top {
+                height: 200px;
+            }
+            .card-title {
+                font-size: 1rem;
+            }
+            .nav-tabs .nav-link {
+                font-size: 0.9rem;
+            }
+            .about-hero h1 {
+                font-size: 2.5rem;
+            }
+            .about-hero p {
+                font-size: 1.1rem;
+            }
+            .feature-title {
+                font-size: 1.5rem;
+            }
+            .feature-text {
+                font-size: 1rem;
+            }
+            .footer {
+                text-align: center;
+            }
+            .footer h5::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+        <h1 class="my-4">Movie Recommendations</h1>
+
+        <!-- Search Bar -->
+        <form class="d-flex my-4" action="/search" method="GET">
+            <input class="form-control me-2" type="search" placeholder="Search movies by title, genre, or actor..." name="query" required>
+            <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="trending-tab" data-bs-toggle="tab" data-bs-target="#trending" type="button" role="tab" aria-controls="trending" aria-selected="true">
+                    Trending Movies
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="popular-tab" data-bs-toggle="tab" data-bs-target="#popular" type="button" role="tab" aria-controls="popular" aria-selected="false">
+                    Popular Movies
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="genres-tab" data-bs-toggle="tab" data-bs-target="#genres" type="button" role="tab" aria-controls="genres" aria-selected="false">
+                    Genres
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations" type="button" role="tab" aria-controls="recommendations" aria-selected="false">
+                    Recommended for You
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="about-tab" data-bs-toggle="tab" data-bs-target="#about" type="button" role="tab" aria-controls="about" aria-selected="false">
+                    About
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Trending Movies Tab -->
+            <div class="tab-pane fade show active" id="trending" role="tabpanel" aria-labelledby="trending-tab">
+                <h2 class="my-4">Trending Movies</h2>
+                <div class="row">
+                    {% for movie in trending_movies %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card">
+                            <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" class="card-img-top" alt="{{ movie.title }}" onerror="this.onerror=null; this.src='/static/placeholder.jpg';">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ movie.title }}</h5>
+                                <a href="/movie/{{ movie.id }}" class="btn btn-primary">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Popular Movies Tab -->
+            <div class="tab-pane fade" id="popular" role="tabpanel" aria-labelledby="popular-tab">
+                <h2 class="my-4">Popular Movies</h2>
+                <div class="row">
+                    {% for movie in popular_movies %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card">
+                            <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" class="card-img-top" alt="{{ movie.title }}" onerror="this.onerror=null; this.src='/static/placeholder.jpg';">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ movie.title }}</h5>
+                                <a href="/movie/{{ movie.id }}" class="btn btn-primary">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Genres Tab -->
+            <div class="tab-pane fade" id="genres" role="tabpanel" aria-labelledby="genres-tab">
+                <h2 class="my-4">Genres</h2>
+                <!-- Genre Select Dropdown -->
+                <select id="genreSelect" class="form-select mb-4">
+                    <option value="" selected disabled>Select a genre</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre.id }}">{{ genre.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Movies for Selected Genre - Updated with proper grid structure -->
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4" id="genreMovies">
+                    <!-- Movies will be dynamically loaded here -->
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="recommendations" role="tabpanel" aria-labelledby="recommendations-tab">
+                <h2 class="my-4">Recommended for You</h2>
+                <div class="text-center">
+                    <p>For personalized recommendations, try our advanced recommender:</p>
+                    <a href="/streamlit_recommender" class="btn btn-danger btn-lg">
+                        <i class="fas fa-star"></i> Launch Recommender
+                    </a>
+                </div>
+            </div>
+
+            <!-- About Tab -->
+            <div class="tab-pane fade" id="about" role="tabpanel" aria-labelledby="about-tab">
+                <div class="about-hero">
+                    <h1>Discover Your Next Favorite Movie</h1>
+                    <p>Our advanced recommendation system helps you find movies you'll love based on your preferences, trending content, and sophisticated algorithms.</p>
+                </div>
+
+                <div class="row">
+                    <!-- Feature 1 -->
+                    <div class="col-lg-6 feature-card" id="feature1">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line feature-icon"></i>
+                            <h3 class="feature-title">Trending Movies</h3>
+                        </div>
+                        <p class="feature-text">
+                            Stay up-to-date with the hottest movies right now. Our trending section shows you what's popular worldwide, updated daily to bring you the most current content.
+                        </p>
+                        <p class="feature-text">
+                            Discover what everyone is talking about and join the conversation with our real-time trending data.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="col-lg-6 feature-card" id="feature2">
+                        <div class="text-center">
+                            <i class="fas fa-tags feature-icon"></i>
+                            <h3 class="feature-title">Genre Exploration</h3>
+                        </div>
+                        <p class="feature-text">
+                            Dive deep into your favorite genres or discover new ones. Our comprehensive genre system helps you find exactly what you're in the mood for.
+                        </p>
+                        <p class="feature-text">
+                            From action-packed adventures to heartwarming dramas, we've got all genres covered with carefully curated selections.
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="col-lg-6 feature-card" id="feature3">
+                        <div class="text-center">
+                            <i class="fas fa-robot feature-icon"></i>
+                            <h3 class="feature-title">Smart Recommendations</h3>
+                        </div>
+                        <p class="feature-text">
+                            Our advanced AI analyzes your preferences and viewing history to suggest movies you'll love. The more you use it, the smarter it gets!
+                        </p>
+                        <p class="feature-text">
+                            Using cutting-edge machine learning algorithms, we find hidden gems that match your unique taste.
+                        </p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="col-lg-6 feature-card" id="feature4">
+                        <div class="text-center">
+                            <i class="fas fa-search feature-icon"></i>
+                            <h3 class="feature-title">Powerful Search</h3>
+                        </div>
+                        <p class="feature-text">
+                            Find exactly what you're looking for with our comprehensive search. Search by title, actor, director, or even just a vague description.
+                        </p>
+                        <p class="feature-text">
+                            Our search understands natural language, so you can find "that movie with the car chase in Paris" as easily as searching by title.
+                        </p>
+                    </div>
+
+                    <!-- Feature 5 -->
+                    <div class="col-lg-6 feature-card" id="feature5">
+                        <div class="text-center">
+                            <i class="fas fa-user-cog feature-icon"></i>
+                            <h3 class="feature-title">Personalized Experience</h3>
+                        </div>
+                        <p class="feature-text">
+                            Create an account to save your favorites, get personalized recommendations, and track what you've watched.
+                        </p>
+                        <p class="feature-text">
+                            Your profile adapts to your tastes, showing you more of what you love and helping you discover new favorites.
+                        </p>
+                    </div>
+
+                    <!-- Feature 6 -->
+                    <div class="col-lg-6 feature-card" id="feature6">
+                        <div class="text-center">
+                            <i class="fas fa-mobile-alt feature-icon"></i>
+                            <h3 class="feature-title">Mobile Friendly</h3>
+                        </div>
+                        <p class="feature-text">
+                            Enjoy our service on any device. Our responsive design works perfectly on phones, tablets, and desktops.
+                        </p>
+                        <p class="feature-text">
+                            Get movie recommendations on the go, save them for later, and never be without something great to watch.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    
+<footer class="footer text-white py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Developer Information -->
+            <div class="col-md-4 mb-4">
+                <h5 class="mb-3">About the Developer</h5>
+                <p class="text-muted">
+                    Developed by <strong>Suyog Sandip Patil</strong>, a passionate software developer with expertise in web development, data analysis, and machine learning.
+                </p>
+                <p class="text-muted">
+                    Email: <a href="mailto:developer@famt.ac.in" class="text-white">developer@famt.ac.in</a>
+                </p>
+            </div>
+
+            <!-- Quick Links -->
+           <!-- Quick Links -->
+<div class="col-md-4 mb-4">
+    <h5 class="mb-3">Quick Links</h5>
+    <ul class="list-unstyled">
+        <li><a href="{{ url_for('index') }}" class="text-white">Home</a></li>
+        <li><a href="#" id="about-link" class="text-white">About</a></li>
+        <li><a href="{{ url_for('contact') }}" class="text-white">Contact</a></li>
+        <li><a href="{{ url_for('privacy_policy') }}" class="text-white">Privacy Policy</a></li>
+    </ul>
+</div>
+
+            <!-- Social Media Links -->
+            <div class="col-md-4 mb-4">
+                <h5 class="mb-3">Connect with Me</h5>
+                <div class="social-links">
+                    <a href="https://www.linkedin.com/in/suyog-patil-5622ba26b/" target="_blank" class="text-white me-3">
+                        <i class="fab fa-linkedin fa-2x"></i>
+                    </a>
+                    <a href="https://github.com/Suyog-Sandip-Patil" target="_blank" class="text-white me-3">
+                        <i class="fab fa-github fa-2x"></i>
+                    </a>
+                    <a href="mailto:td230467@famt.ac.in" class="text-white me-3">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </a>
+                </div>
+                <p class="text-muted mt-3">Contact: <a href="tel:+911234567890" class="text-white">+91 1234567890</a></p>
+            </div>
+        </div>
+
+        <!-- Copyright Notice -->
+        <div class="text-center mt-4">
+            <p class="text-muted mb-0">&copy; 2025 Suyog Sandip Patil. All rights reserved.</p>
+            <p class="text-muted">Designed and developed with <i class="fas fa-heart text-danger"></i> by Suyog Sandip Patil.</p>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Hide Loading Screen -->
+    <script>
+        window.addEventListener('load', () => {
+            document.getElementById('loadingScreen').style.display = 'none';
+            
+            // Initialize footer animation
+            const footer = document.querySelector('.footer');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        footer.classList.add('in-view');
+                    }
+                });
+            }, { threshold: 0.1 }); // Trigger when 10% of the footer is visible
+
+            observer.observe(footer);
+        });
+    </script>
+
+    <!-- JavaScript to Filter Movies by Genre -->
+    <script>
+        const genreSelect = document.getElementById('genreSelect');
+        const genreMoviesContainer = document.getElementById('genreMovies');
+    
+        genreSelect.addEventListener('change', async (event) => {
+            const genreId = event.target.value;
+            if (!genreId) return;
+    
+            // Show loading spinner
+            genreMoviesContainer.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading movies...</p>
+                </div>
+            `;
+    
+            try {
+                // Fetch movies for the selected genre
+                const response = await fetch(`/genre/${genreId}`);
+                const data = await response.text();
+    
+                // Parse the HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const movies = doc.querySelectorAll('.card');
+    
+                // Clear the container and append the movies with proper structure
+                genreMoviesContainer.innerHTML = '';
+                
+                // Create columns for each movie
+                movies.forEach(movie => {
+                    const col = document.createElement('div');
+                    col.className = 'col';
+                    col.innerHTML = movie.outerHTML;
+                    genreMoviesContainer.appendChild(col);
+                });
+    
+                // If no movies found
+                if (movies.length === 0) {
+                    genreMoviesContainer.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <p class="text-muted">No movies found for this genre.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error fetching genre movies:', error);
+                genreMoviesContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <p class="text-danger">Failed to load movies. Please try again.</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+
+    <!-- Scroll Animation for About Section Features -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're on the About tab
+            const aboutTab = document.getElementById('about-tab');
+            const aboutPane = document.getElementById('about');
+            
+            aboutTab.addEventListener('click', function() {
+                // Reset all features to hidden when tab is clicked
+                document.querySelectorAll('.feature-card').forEach(card => {
+                    card.classList.remove('visible');
+                });
+                
+                // Trigger scroll event to show visible features
+                setTimeout(() => {
+                    checkVisibility();
+                }, 100);
+            });
+
+            // Function to check if elements are visible
+            function checkVisibility() {
+                const features = document.querySelectorAll('.feature-card');
+                features.forEach(feature => {
+                    const rect = feature.getBoundingClientRect();
+                    const isVisible = (
+                        rect.top <= (window.innerHeight * 0.8) && 
+                        rect.bottom >= (window.innerHeight * 0.2)
+                    );
+                    
+                    if (isVisible) {
+                        setTimeout(() => {
+                            feature.classList.add('visible');
+                        }, 100 * parseInt(feature.id.replace('feature', ''))); // Staggered delay
+                    }
+                });
+            }
+
+            // Add scroll event listener
+            window.addEventListener('scroll', checkVisibility);
+            
+            // Check visibility on page load if already on About tab
+            if (aboutPane.classList.contains('active')) {
+                checkVisibility();
+            }
+        });
+    </script>
+
+    <script>
+        
+document.getElementById('about-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    const aboutTab = new bootstrap.Tab(document.getElementById('about-tab'));
+    aboutTab.show();
+    window.scrollTo(0, 0);
+});
+    </script>
+</body>
+</html>
