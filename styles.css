@@ -1,0 +1,250 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #1a1a1a; /* Dark background for better contrast */
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background for readability */
+    border-radius: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    flex: 1;
+    animation: pageFadeIn 1s ease-out; /* Fade-in animation for the entire page */
+}
+
+h1, h2, h3 {
+    color: #ffffff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow for better readability */
+}
+
+/* Search Bar Styles */
+.d-flex {
+    margin-bottom: 20px;
+}
+
+.form-control {
+    border-radius: 20px;
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #444;
+    transition: box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 8px rgba(40, 167, 69, 0.6); /* Green glow on focus */
+}
+
+.btn-outline-success {
+    border-radius: 20px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-outline-success:hover {
+    background-color: #218838;
+    transform: scale(1.05); /* Slight scale-up on hover */
+}
+
+/* Card Styles with Hover Animations */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: rgba(51, 51, 51, 0.9); /* Semi-transparent card background */
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.card-img-top {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    height: 300px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.1); /* Zoom effect on hover */
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #fff;
+    transition: color 0.3s ease;
+}
+
+.card:hover .card-title {
+    color: #28a745; /* Change title color on hover */
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: scale(1.05); /* Slight scale-up on hover */
+}
+
+/* Text Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h1, h2, h3, .card-title {
+    animation: fadeIn 1s ease-out; /* Fade-in animation for headings and titles */
+}
+
+/* Site Loading Animation */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #28a745;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Navigation Animations */
+.nav-tabs .nav-link {
+    color: #fff;
+    background-color: rgba(51, 51, 51, 0.7);
+    border: none;
+    border-radius: 10px 10px 0 0;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #28a745;
+    color: #fff;
+    transform: scale(1.05); /* Slight scale-up for active tab */
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: #218838;
+    color: #fff;
+    transform: scale(1.05); /* Slight scale-up on hover */
+}
+
+/* Genre Buttons */
+.btn-outline-primary {
+    border: 1px solid #007bff;
+    color: #007bff;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    color: #fff;
+    transform: scale(1.05); /* Slight scale-up on hover */
+}
+
+/* Fade-in Animation for Page Content */
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 200px;
+    }
+
+    .card-title {
+        font-size: 1rem;
+    }
+
+    .nav-tabs .nav-link {
+        font-size: 0.9rem; /* Smaller font size for tabs on mobile */
+    }
+}
+
+/* Additional Animations */
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Apply animations to specific elements */
+.search-bar {
+    animation: slideInFromLeft 0.8s ease-out;
+}
+
+.tab-content {
+    animation: slideInFromRight 0.8s ease-out;
+}
