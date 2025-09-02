@@ -76,13 +76,13 @@ streamlit run recommender_app.py
 
 ## 📁 Project Structure
 movie-recommendation-system/
-├── app.py                     # Flask application
-├── recommender_app.py         # Streamlit application
-├── movie-recommendation-system.ipynb  # Jupyter notebook for model training
-├── movie_dict.pkl             # Pickled movie data
-├── similarity.pkl             # Precomputed similarity matrix
-├── templates/                 # Flask HTML templates
-├── static/                    # Static assets (CSS, images)
+├── app.py                     # Flask application <br>
+├── recommender_app.py         # Streamlit application <br>
+├── movie-recommendation-system.ipynb  # Jupyter notebook for model training <br>
+├── movie_dict.pkl             # Pickled movie data <br>
+├── similarity.pkl             # Precomputed similarity matrix <br>
+├── templates/                 # Flask HTML templates <br>
+├── static/                    # Static assets (CSS, images) <br>
 └── responses/                 # Contact form responses
 
 ---
