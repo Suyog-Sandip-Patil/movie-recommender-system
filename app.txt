@@ -1,0 +1,197 @@
+from flask import Flask, render_template, request
+import requests
+import random
+import logging
+import pickle
+import pandas as pd
+
+app = Flask(__name__)
+
+# TMDB API key and base URL
+TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8'  # Replace with your TMDB API key
+TMDB_BASE_URL = 'https://api.themoviedb.org/3'
+
+# Enable debug logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Function to fetch a random backdrop image
+def get_random_backdrop():
+    try:
+        # Fetch popular movies to get backdrop images
+        popular_url = f'{TMDB_BASE_URL}/movie/popular?api_key={TMDB_API_KEY}'
+        response = requests.get(popular_url)
+        movies = response.json().get('results', [])
+        
+        # Filter movies with backdrop images
+        movies_with_backdrops = [movie for movie in movies if movie.get('backdrop_path')]
+        
+        # Select a random movie with a backdrop
+        if movies_with_backdrops:
+            random_movie = random.choice(movies_with_backdrops)
+            backdrop_path = random_movie['backdrop_path']
+            return f"https://image.tmdb.org/t/p/original{backdrop_path}"
+        else:
+            return None
+    except Exception as e:
+        logging.error(f"Error fetching backdrop: {e}")
+        return None
+
+# Function to fetch all genres from TMDB API
+def get_all_genres():
+    try:
+        genre_url = f'{TMDB_BASE_URL}/genre/movie/list?api_key={TMDB_API_KEY}'
+        response = requests.get(genre_url)
+        genres = response.json().get('genres', [])
+        return genres
+    except Exception as e:
+        logging.error(f"Error fetching genres: {e}")
+        return []
+
+# Helper function to get genre ID from genre name
+def get_genre_id(genre_name):
+    genre_mapping = {
+        'Action': 28,
+        'Comedy': 35,
+        'Drama': 18,
+        'Horror': 27,
+        # Add more genres as needed
+    }
+    return genre_mapping.get(genre_name)
+
+# Homepage route
+@app.route('/')
+def index():
+    try:
+        # Fetch trending movies
+        trending_url = f'{TMDB_BASE_URL}/trending/movie/week?api_key={TMDB_API_KEY}'
+        response = requests.get(trending_url)
+        logging.debug(f"Trending API Response: {response.status_code}, {response.json()}")  # Log response
+        trending_movies = response.json().get('results', [])[:10]  # Get top 10 trending movies
+
+        # Fetch popular movies
+        popular_url = f'{TMDB_BASE_URL}/movie/popular?api_key={TMDB_API_KEY}'
+        response = requests.get(popular_url)
+        logging.debug(f"Popular API Response: {response.status_code}, {response.json()}")  # Log response
+        popular_movies = response.json().get('results', [])[:10]  # Get top 10 popular movies
+
+        # Fetch a random backdrop image
+        backdrop_url = get_random_backdrop()
+
+        # Fetch all genres
+        genres = get_all_genres()
+
+        # Mock user preferences (replace with actual user data from a database)
+        user = {
+            'name': 'John Doe',
+            'preferences': ['Action', 'Comedy'],  # User's favorite genres
+        }
+
+        # Fetch recommended movies based on user preferences
+        recommended_movies = []
+        for genre in user['preferences']:
+            genre_id = get_genre_id(genre)  # Get the genre ID from the genre name
+            if genre_id:
+                genre_url = f'{TMDB_BASE_URL}/discover/movie?api_key={TMDB_API_KEY}&with_genres={genre_id}'
+                response = requests.get(genre_url)
+                movies = response.json().get('results', [])
+                recommended_movies.extend(movies[:5])  # Add top 5 movies for each genre
+
+        # Remove duplicates (if any)
+        recommended_movies = list({movie['id']: movie for movie in recommended_movies}.values())
+
+        return render_template(
+            'index.html',
+            trending_movies=trending_movies,
+            popular_movies=popular_movies,
+            recommended_movies=recommended_movies,
+            genres=genres,  # Pass genres to the template
+            backdrop_url=backdrop_url
+        )
+    except Exception as e:
+        logging.error(f"Error fetching data from TMDB API: {e}")
+        return render_template('error.html', message="Failed to fetch data from TMDB API.")
+
+# Search route
+@app.route('/search')
+def search():
+    try:
+        query = request.args.get('query')  # Get the search query from the URL parameters
+        if not query:
+            return render_template('error.html', message="Please enter a search query.")
+
+        # Fetch search results from TMDB API
+        search_url = f'{TMDB_BASE_URL}/search/movie?api_key={TMDB_API_KEY}&query={query}'
+        response = requests.get(search_url)
+        logging.debug(f"Search API Response: {response.status_code}, {response.json()}")  # Log response
+        search_results = response.json().get('results', [])
+
+        # Fetch a random backdrop image
+        backdrop_url = get_random_backdrop()
+
+        return render_template('search_results.html', query=query, search_results=search_results, backdrop_url=backdrop_url)
+    except Exception as e:
+        logging.error(f"Error fetching search results: {e}")
+        return render_template('error.html', message="Failed to fetch search results.")
+
+# Movie details route
+@app.route('/movie/<int:movie_id>')
+def movie_details(movie_id):
+    try:
+        # Fetch movie details
+        movie_url = f'{TMDB_BASE_URL}/movie/{movie_id}?api_key={TMDB_API_KEY}&append_to_response=videos'
+        response = requests.get(movie_url)
+        logging.debug(f"Movie Details API Response: {response.status_code}, {response.json()}")  # Log response
+        movie = response.json()
+
+        # Fetch similar movies
+        similar_url = f'{TMDB_BASE_URL}/movie/{movie_id}/similar?api_key={TMDB_API_KEY}'
+        response = requests.get(similar_url)
+        logging.debug(f"Similar Movies API Response: {response.status_code}, {response.json()}")  # Log response
+        similar_movies = response.json().get('results', [])[:5]  # Get top 5 similar movies
+
+        # Use the movie's backdrop as the background
+        backdrop_url = f"https://image.tmdb.org/t/p/original{movie['backdrop_path']}" if movie.get('backdrop_path') else None
+
+        return render_template('movie_details.html', movie=movie, similar_movies=similar_movies, backdrop_url=backdrop_url)
+    except Exception as e:
+        logging.error(f"Error fetching movie details: {e}")
+        return render_template('error.html', message="Failed to fetch movie details.")
+
+# User profile route
+@app.route('/profile')
+def profile():
+    # Mock user data (replace with actual user data from a database)
+    user = {
+        'name': 'John Doe',
+        'watchlist': [],
+        'watched': [],
+        'preferences': ['Action', 'Comedy']
+    }
+
+    # Fetch a random backdrop image
+    backdrop_url = get_random_backdrop()
+
+    return render_template('profile.html', user=user, backdrop_url=backdrop_url)
+
+# Genre movies route
+@app.route('/genre/<int:genre_id>')
+def genre_movies(genre_id):
+    try:
+        # Fetch movies by genre
+        genre_url = f'{TMDB_BASE_URL}/discover/movie?api_key={TMDB_API_KEY}&with_genres={genre_id}'
+        response = requests.get(genre_url)
+        logging.debug(f"Genre Movies API Response: {response.status_code}, {response.json()}")  # Log response
+        genre_movies = response.json().get('results', [])
+
+        # Fetch a random backdrop image
+        backdrop_url = get_random_backdrop()
+
+        return render_template('genre_movies.html', 
+                            genre_movies=genre_movies, 
+                            backdrop_url=backdrop_url)
+    except Exception as e:
+        logging.error(f"Error fetching genre movies: {e}")
+        return render_template('error.html', message="Failed to fetch genre movies.")
+
+if __name__ == '__main__':
+    app.run(debug=True)

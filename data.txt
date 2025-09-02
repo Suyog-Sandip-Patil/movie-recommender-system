@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            background-image: url('{{ backdrop_url }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background for readability */
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            flex: 1;
+            animation: pageFadeIn 1s ease-out; /* Fade-in animation for the entire page */
+        }
+        .nav-tabs .nav-link {
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: none;
+            border-radius: 10px 10px 0 0;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #28a745;
+            color: #fff;
+            transform: scale(1.05); /* Slight scale-up for active tab */
+        }
+        .nav-tabs .nav-link:hover {
+            background-color: #218838;
+            color: #fff;
+            transform: scale(1.05); /* Slight scale-up on hover */
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        .card-img-top {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .card:hover .card-img-top {
+            transform: scale(1.1); /* Zoom effect on hover */
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+            transition: color 0.3s ease;
+        }
+        .card:hover .card-title {
+            color: #28a745; /* Change title color on hover */
+        }
+        .btn-outline-primary {
+            border: 1px solid #007bff;
+            color: #007bff;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background-color: #007bff;
+            color: #fff;
+            transform: scale(1.05); /* Slight scale-up on hover */
+        }
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #28a745;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Fade-in Animation for Page Content */
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-img-top {
+                height: 200px;
+            }
+            .card-title {
+                font-size: 1rem;
+            }
+            .nav-tabs .nav-link {
+                font-size: 0.9rem; /* Smaller font size for tabs on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+        <h1 class="my-4">Movie Recommendations</h1>
+
+        <!-- Search Bar -->
+        <form class="d-flex my-4" action="/search" method="GET">
+            <input class="form-control me-2" type="search" placeholder="Search movies by title, genre, or actor..." name="query" required>
+            <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="trending-tab" data-bs-toggle="tab" data-bs-target="#trending" type="button" role="tab" aria-controls="trending" aria-selected="true">
+                    Trending Movies
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="popular-tab" data-bs-toggle="tab" data-bs-target="#popular" type="button" role="tab" aria-controls="popular" aria-selected="false">
+                    Popular Movies
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="genres-tab" data-bs-toggle="tab" data-bs-target="#genres" type="button" role="tab" aria-controls="genres" aria-selected="false">
+                    Genres
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations" type="button" role="tab" aria-controls="recommendations" aria-selected="false">
+                    Recommended for You
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Trending Movies Tab -->
+            <div class="tab-pane fade show active" id="trending" role="tabpanel" aria-labelledby="trending-tab">
+                <h2 class="my-4">Trending Movies</h2>
+                <div class="row">
+                    {% for movie in trending_movies %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card">
+                            <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" class="card-img-top" alt="{{ movie.title }}" onerror="this.onerror=null; this.src='/static/placeholder.jpg';">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ movie.title }}</h5>
+                                <a href="/movie/{{ movie.id }}" class="btn btn-primary">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Popular Movies Tab -->
+            <div class="tab-pane fade" id="popular" role="tabpanel" aria-labelledby="popular-tab">
+                <h2 class="my-4">Popular Movies</h2>
+                <div class="row">
+                    {% for movie in popular_movies %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card">
+                            <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" class="card-img-top" alt="{{ movie.title }}" onerror="this.onerror=null; this.src='/static/placeholder.jpg';">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ movie.title }}</h5>
+                                <a href="/movie/{{ movie.id }}" class="btn btn-primary">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Genres Tab -->
+            <div class="tab-pane fade" id="genres" role="tabpanel" aria-labelledby="genres-tab">
+                <h2 class="my-4">Genres</h2>
+                <!-- Genre Select Dropdown -->
+                <select id="genreSelect" class="form-select mb-4">
+                    <option value="" selected disabled>Select a genre</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre.id }}">{{ genre.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Movies for Selected Genre -->
+                <div class="row" id="genreMovies">
+                    <!-- Movies will be dynamically loaded here -->
+                </div>
+            </div>
+
+            <!-- Personalized Recommendations Tab -->
+            <div class="tab-pane fade" id="recommendations" role="tabpanel" aria-labelledby="recommendations-tab">
+                <h2 class="my-4">Recommended for You</h2>
+                <div class="row">
+                    {% for movie in recommended_movies %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card">
+                            <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" class="card-img-top" alt="{{ movie.title }}" onerror="this.onerror=null; this.src='/static/placeholder.jpg';">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ movie.title }}</h5>
+                                <a href="/movie/{{ movie.id }}" class="btn btn-primary">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12">
+                        <p>No recommendations available. Start rating movies to get personalized recommendations!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Hide Loading Screen -->
+    <script>
+        window.addEventListener('load', () => {
+            document.getElementById('loadingScreen').style.display = 'none';
+        });
+    </script>
+
+    <!-- JavaScript to Filter Movies by Genre -->
+    <script>
+        const genreSelect = document.getElementById('genreSelect');
+        const genreMoviesContainer = document.getElementById('genreMovies');
+
+        genreSelect.addEventListener('change', async (event) => {
+            const genreId = event.target.value;
+            if (!genreId) return;
+
+            // Show loading spinner
+            genreMoviesContainer.innerHTML = '<div class="text-center">Loading...</div>';
+
+            try {
+                // Fetch movies for the selected genre
+                const response = await fetch(`/genre/${genreId}`);
+                const data = await response.text();
+
+                // Parse the HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const movies = doc.querySelectorAll('.card');
+
+                // Clear the container and append the movies
+                genreMoviesContainer.innerHTML = '';
+                movies.forEach(movie => {
+                    genreMoviesContainer.appendChild(movie);
+                });
+            } catch (error) {
+                console.error('Error fetching genre movies:', error);
+                genreMoviesContainer.innerHTML = '<div class="text-center text-danger">Failed to load movies. Please try again.</div>';
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+python app.py  #To run
