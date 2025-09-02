@@ -2,27 +2,27 @@
 A personalized movie recommendation system built with Python, Machine Learning, and the TMDB API. This project features dual UI support via Flask and Streamlit, providing a seamless and interactive user experience.
 
 ✨ Features
-🎯 Content-Based Filtering: Uses cosine similarity to recommend top 5 similar movies.
+🎯 Content-Based Filtering: Uses cosine similarity to recommend top 5 similar movies
 
 🌐 Dual UI Support:
 
-Flask-based web app with responsive HTML/CSS templates.
+Flask-based web app with responsive HTML/CSS templates
 
-Streamlit app for a quick and interactive experience.
+Streamlit app for a quick and interactive experience
 
-🔍 Dynamic Movie Search: Search for movies by title or query.
+🔍 Dynamic Movie Search: Search for movies by title or query
 
-🎭 Genre Browsing: Explore movies by genre.
+🎭 Genre Browsing: Explore movies by genre
 
-🖼️ Poster Display: Fetches movie posters dynamically via the TMDB API.
+🖼️ Poster Display: Fetches movie posters dynamically via the TMDB API
 
-💾 Efficient Data Handling: Uses Pickle to store precomputed movie data and similarity matrices.
+💾 Efficient Data Handling: Uses Pickle to store precomputed movie data and similarity matrices
 
-⚡ Caching & Optimization: Implements LRU caching and efficient API calls for improved performance.
+⚡ Caching & Optimization: Implements LRU caching and efficient API calls for improved performance
 
-🎨 Custom Styling: Enhanced UI with custom CSS, animations, and responsive design.
+🎨 Custom Styling: Enhanced UI with custom CSS, animations, and responsive design
 
-✅ Error Handling: Robust error handling and logging for reliability.
+✅ Error Handling: Robust error handling and logging for reliability
 
 🛠️ Tech Stack
 Python
@@ -54,9 +54,9 @@ cd movie-recommendation-system
 bash
 pip install -r requirements.txt
 3. Set Up TMDB API Key
-Get your API key from TMDB.
+Get your API key from TMDB
 
-Replace the TMDB_API_KEY in app.py with your key.
+Replace the TMDB_API_KEY in app.py with your key
 
 4. Run the Flask App
 bash
@@ -78,28 +78,28 @@ text
 🎥 How It Works
 Data Processing:
 
-Movie data is processed and features like genres, keywords, cast, and crew are extracted.
+Movie data is processed and features like genres, keywords, cast, and crew are extracted
 
-Text data is stemmed and vectorized using CountVectorizer.
+Text data is stemmed and vectorized using CountVectorizer
 
 Similarity Calculation:
 
-Cosine similarity is computed between movie vectors.
+Cosine similarity is computed between movie vectors
 
 Recommendation:
 
-Based on user input, the system returns the top 5 most similar movies.
+Based on user input, the system returns the top 5 most similar movies
 
 UI Interaction:
 
-Users can select a movie and get recommendations with posters.
+Users can select a movie and get recommendations with posters
 
 🚀 Usage
-Select a movie from the dropdown.
+Select a movie from the dropdown
 
-Click the "Recommend" button.
+Click the "Recommend" button
 
-View the top 5 recommended movies with posters.
+View the top 5 recommended movies with posters
 
 📞 Contact & Support
 For questions or support, please use the contact form in the Flask app or reach out via the provided channels.
@@ -108,10 +108,10 @@ For questions or support, please use the contact form in the Flask app or reach 
 This project is licensed under the MIT License.
 
 🙌 Acknowledgments
-TMDB for providing the movie data API.
+TMDB for providing the movie data API
 
-Scikit-learn for machine learning tools.
+Scikit-learn for machine learning tools
 
-Flask & Streamlit for UI frameworks.
+Flask & Streamlit for UI frameworks
 
 🎉 Enjoy exploring movies with this recommendation system!
