@@ -75,7 +75,7 @@ streamlit run recommender_app.py
 ---
 
 ## 📁 Project Structure
-movie-recommendation-system/
+movie-recommendation-system/ <br>
 ├── app.py                     # Flask application <br>
 ├── recommender_app.py         # Streamlit application <br>
 ├── movie-recommendation-system.ipynb  # Jupyter notebook for model training <br>
