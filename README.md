@@ -55,33 +55,27 @@ This project features **dual UI support** via Flask and Streamlit, providing a s
 ## 📦 Installation & Setup
 
 1. **Clone the Repository**
-```bash
 git clone <repository-url>
 cd movie-recommendation-system
-Install Dependencies
 
-bash
-Copy code
+2. **Install Dependencies**
 pip install -r requirements.txt
-Set Up TMDB API Key
 
-Get your API key from TMDB
+3. **Set Up TMDB API Key**
 
-Replace the TMDB_API_KEY in app.py with your key
+4. **Get your API key from TMDB**
 
-Run the Flask App
+5. **Replace the TMDB_API_KEY in app.py with your key**
 
-bash
-Copy code
+6. **Run the Flask App**
 python app.py
 Run the Streamlit App
-
-bash
-Copy code
 streamlit run recommender_app.py
-📁 Project Structure
-perl
-Copy code
+
+---
+
+## 📁 Project Structure
+
 movie-recommendation-system/
 ├── app.py                     # Flask application
 ├── recommender_app.py         # Streamlit application
@@ -91,43 +85,39 @@ movie-recommendation-system/
 ├── templates/                 # Flask HTML templates
 ├── static/                    # Static assets (CSS, images)
 └── responses/                 # Contact form responses
-🎥 How It Works
-Data Processing
 
+---
+
+## 🎥 How It Works
+1. **Data Processing**
 Movie data is processed and features like genres, keywords, cast, and crew are extracted
-
 Text data is stemmed and vectorized using CountVectorizer
 
-Similarity Calculation
-
+2. **Similarity Calculation**
 Cosine similarity is computed between movie vectors
 
-Recommendation
-
+3. **Recommendation**
 Based on user input, the system returns the top 5 most similar movies
 
-UI Interaction
-
+4. **UI Interaction**
 Users can select a movie and get recommendations with posters
 
-🚀 Usage
-Select a movie from the dropdown
+## 🚀 Usage
+1. Select a movie from the dropdown
 
-Click the "Recommend" button
+2. Click the "Recommend" button
 
-View the top 5 recommended movies with posters
+3. View the top 5 recommended movies with posters
 
-📞 Contact & Support
+## 📞 Contact & Support
 For questions or support, use the contact form in the Flask app or reach out via the provided channels.
 
-📜 License
+## 📜 License
 This project is licensed under the MIT License.
 
-🙌 Acknowledgments
-TMDB for providing the movie data API
+## 🙌 Acknowledgments
+- TMDB for providing the movie data API
+- Scikit-learn for machine learning tools
+- Flask & Streamlit for UI frameworks
 
-Scikit-learn for machine learning tools
-
-Flask & Streamlit for UI frameworks
-
-🎉 Enjoy exploring movies with this recommendation system!
+**🎉 Enjoy exploring movies with this recommendation system!**
